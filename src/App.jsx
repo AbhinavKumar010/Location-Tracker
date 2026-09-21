@@ -55,15 +55,18 @@ function RecenterMap({ position }) {
 function App() {
   const [points, setPoints] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []
+      const cutoff = Date.now() - 2 * 24 * 60 * 60 * 1000
+      return (JSON.parse(localStorage.getItem(STORAGE_KEY)) || []).filter((point) => point.timestamp >= cutoff)
     } catch {
       return []
     }
   })
-  const [isTracking, setIsTracking] = useState(false)
+  const [isTracking, setIsTracking] = useState(() => Boolean(Number(localStorage.getItem('trailmark-started-at'))))
   const [error, setError] = useState('')
   const [elapsed, setElapsed] = useState(0)
-  const [startedAt, setStartedAt] = useState(null)
+  const [startedAt, setStartedAt] = useState(() => Number(localStorage.getItem('trailmark-started-at')) || null)
+  const [installPrompt, setInstallPrompt] = useState(null)
+  const [isInstalled, setIsInstalled] = useState(() => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true)
   const watchId = useRef(null)
 
   const latestPoint = points.at(-1)
@@ -77,10 +80,27 @@ function App() {
   }, [points])
 
   useEffect(() => {
-    if (!isTracking || !startedAt) return undefined
+    const handleInstallPrompt = (event) => {
+      event.preventDefault()
+      setInstallPrompt(event)
+    }
+    const handleInstalled = () => {
+      setIsInstalled(true)
+      setInstallPrompt(null)
+    }
+    window.addEventListener('beforeinstallprompt', handleInstallPrompt)
+    window.addEventListener('appinstalled', handleInstalled)
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleInstallPrompt)
+      window.removeEventListener('appinstalled', handleInstalled)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!startedAt) return undefined
     const timer = window.setInterval(() => setElapsed(Math.floor((Date.now() - startedAt) / 1000)), 1000)
     return () => window.clearInterval(timer)
-  }, [isTracking, startedAt])
+  }, [startedAt])
 
   useEffect(() => () => {
     if (watchId.current !== null) navigator.geolocation?.clearWatch(watchId.current)
@@ -94,9 +114,11 @@ function App() {
       timestamp: timestamp || Date.now(),
     }
     setPoints((current) => {
-      const previous = current.at(-1)
+      const cutoff = Date.now() - 2 * 24 * 60 * 60 * 1000
+      const recentPoints = current.filter((point) => point.timestamp >= cutoff)
+      const previous = recentPoints.at(-1)
       if (previous && distanceBetween(previous, nextPoint) < 3) return current
-      return [...current, nextPoint]
+      return [...recentPoints, nextPoint]
     })
     setError('')
   }
@@ -108,14 +130,15 @@ function App() {
     }
     setError('')
     setIsTracking(true)
-    setStartedAt(Date.now())
+    const trackingStart = startedAt || Date.now()
+    setStartedAt(trackingStart)
+    localStorage.setItem('trailmark-started-at', String(trackingStart))
     navigator.geolocation.getCurrentPosition(recordPosition, () => {
       setError('Location permission is needed to start recording.')
       setIsTracking(false)
+      setStartedAt(null)
+      localStorage.removeItem('trailmark-started-at')
     }, { enableHighAccuracy: true })
-    watchId.current = navigator.geolocation.watchPosition(recordPosition, () => {
-      setError('Unable to update your location. Check your device permissions.')
-    }, { enableHighAccuracy: true, maximumAge: 10000 })
   }
 
   const stopTracking = () => {
@@ -123,7 +146,19 @@ function App() {
     watchId.current = null
     setIsTracking(false)
     setStartedAt(null)
+    localStorage.removeItem('trailmark-started-at')
   }
+
+  useEffect(() => {
+    if (!startedAt || !navigator.geolocation) return undefined
+    watchId.current = navigator.geolocation.watchPosition(recordPosition, () => {
+      setError('Unable to update your location. Check your device permissions.')
+    }, { enableHighAccuracy: true, maximumAge: 10000 })
+    return () => {
+      if (watchId.current !== null) navigator.geolocation.clearWatch(watchId.current)
+      watchId.current = null
+    }
+  }, [startedAt])
 
   const clearHistory = () => {
     stopTracking()
@@ -132,14 +167,27 @@ function App() {
     setError('')
   }
 
-  const exportHistory = () => {
-    const blob = new Blob([JSON.stringify(points, null, 2)], { type: 'application/json' })
+  const downloadMap = () => {
+    if (!points.length) return
+    const route = points.map((point) => `[${point.lng}, ${point.lat}]`).join(',')
+    const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vithi route</title><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"></head><body style="margin:0"><div id="map" style="height:100vh"></div><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script>const points=[${route}];const map=L.map('map').fitBounds(points.map(([lng,lat])=>[lat,lng]));L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors'}).addTo(map);L.polyline(points.map(([lng,lat])=>[lat,lng]),{color:'#5b5cf0',weight:5}).addTo(map);L.circleMarker(points.at(-1).slice().reverse(),{radius:8,color:'#fff',weight:3,fillColor:'#5b5cf0',fillOpacity:1}).addTo(map);</script></body></html>`
+    const blob = new Blob([html], { type: 'text/html' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `trailmark-${new Date().toISOString().slice(0, 10)}.json`
+    link.download = `vithi-route-${new Date().toISOString().slice(0, 10)}.html`
     link.click()
     URL.revokeObjectURL(url)
+  }
+
+  const installApp = async () => {
+    if (!installPrompt) {
+      setError('Open your browser menu and choose “Add to Home Screen” to install Vithi.')
+      return
+    }
+    await installPrompt.prompt()
+    const choice = await installPrompt.userChoice
+    if (choice.outcome === 'accepted') setInstallPrompt(null)
   }
 
   const center = latestPoint ? [latestPoint.lat, latestPoint.lng] : DEFAULT_CENTER
@@ -153,9 +201,7 @@ function App() {
           <span>Vithi</span>
         </a>
         <div className="header-status"><span className={`status-dot ${isTracking ? 'live' : ''}`} /> {isTracking ? 'Recording live' : 'Ready to track'}</div>
-        <button className="icon-button" onClick={exportHistory} disabled={!points.length} aria-label="Export location history" title="Export history">
-          <Download size={18} />
-        </button>
+        {!isInstalled && <button className="install-button" onClick={installApp}><Download size={15} /> Install app</button>}
       </header>
 
       <main>
@@ -189,6 +235,7 @@ function App() {
             {error && <p className="error-message">{error}</p>}
             <div className="map-actions">
               {isTracking ? <button className="primary-button stop" onClick={stopTracking}><Pause size={17} /> Pause tracking</button> : <button className="primary-button" onClick={startTracking}><Play size={17} /> Start tracking</button>}
+              {points.length > 0 && <button className="text-button" onClick={downloadMap}><Download size={16} /> Download map</button>}
               {points.length > 0 && <button className="text-button danger" onClick={clearHistory}><Trash2 size={16} /> Clear history</button>}
             </div>
           </div>
