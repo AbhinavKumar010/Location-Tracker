@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Trailmark icon">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#7c3aed" />
+      <stop offset="100%" stop-color="#2563eb" />
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="52" fill="#111827" />
+  <path d="M128 36c-39.8 0-72 31.2-72 70 0 53.5 72 112 72 112s72-58.5 72-112c0-38.8-32.2-70-72-70Zm0 98.5A28.5 28.5 0 1 1 128 77a28.5 28.5 0 0 1 0 57.5Z" fill="url(#g)"/>
+  <circle cx="128" cy="106" r="17" fill="#fff" opacity="0.9"/>
+</svg>

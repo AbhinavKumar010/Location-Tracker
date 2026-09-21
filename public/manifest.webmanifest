@@ -1,0 +1,17 @@
+{
+  "name": "Trailmark",
+  "short_name": "Trailmark",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#111827",
+  "description": "Location tracking and route journal web app",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
