@@ -10,6 +10,7 @@ import {
   Gauge,
   Home,
   LocateFixed,
+  Mail,
   MapPin,
   Navigation,
   Pause,
@@ -674,10 +675,7 @@ function App() {
 
             {showExportMenu && (
               <div className="export-menu">
-                <button onClick={() => exportTrip('html')}>HTML Map</button>
-                <button onClick={() => exportTrip('gpx')}>GPX</button>
-                <button onClick={() => exportTrip('json')}>JSON</button>
-                <button onClick={() => exportTrip('csv')}>CSV</button>
+                <button onClick={() => exportTrip('html')}>Route</button>
               </div>
             )}
 
@@ -793,6 +791,21 @@ function App() {
             </div>
           </section>
         )}
+
+        <section className="feedback-card" aria-labelledby="feedback-heading">
+          <div>
+            <p className="eyebrow small">HELP IMPROVE VITHI</p>
+            <h2 id="feedback-heading">Have feedback?</h2>
+            <p>Tell us what worked, what felt unclear, or what would make your next route better.</p>
+          </div>
+          <a
+            className="feedback-button"
+            href="mailto:?subject=Feedback%20for%20Vithi&body=Hi%20Vithi%20team%2C%0A%0A"
+          >
+            <Mail size={17} />
+            Email feedback
+          </a>
+        </section>
       </main>
 
       {showNamePrompt && pendingTrip && (

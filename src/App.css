@@ -677,6 +677,54 @@ h1 {
   font-size: 1rem;
 }
 
+.feedback-card {
+  margin-top: 1.4rem;
+  padding: 1.2rem 1.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 1.2rem;
+  background: linear-gradient(135deg, rgba(239, 246, 255, 0.9), rgba(255, 255, 255, 0.84));
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.03);
+}
+
+.feedback-card h2 {
+  color: #111827;
+  font-size: 1rem;
+  letter-spacing: -0.03em;
+}
+
+.feedback-card p:last-child {
+  max-width: 38rem;
+  margin-top: 0.35rem;
+  color: #72809a;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.feedback-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  padding: 0.75rem 1rem;
+  border-radius: 0.8rem;
+  background: #4f52d6;
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 10px 22px rgba(79, 82, 214, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feedback-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 26px rgba(79, 82, 214, 0.28);
+}
+
 .export-menu {
   display: flex;
   flex-wrap: wrap;
@@ -935,6 +983,15 @@ h1 {
 
   .summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .feedback-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .feedback-button {
+    justify-content: center;
   }
 
   .return-grid,
