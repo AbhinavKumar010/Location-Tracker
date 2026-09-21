@@ -45,9 +45,40 @@ const DEFAULT_GPS_OPTIONS = { enableHighAccuracy: true, maximumAge: 5000, timeou
 
 function RecenterMap({ position }) {
   const map = useMap()
+  const hasCentered = useRef(false)
+
   useEffect(() => {
-    if (position) map.flyTo([position.lat, position.lng], 16, { duration: 1 })
+    if (position && !hasCentered.current) {
+      map.flyTo([position.lat, position.lng], 17, { duration: 1 })
+      hasCentered.current = true
+    }
   }, [map, position])
+  return null
+}
+
+function FocusMap({ position, request }) {
+  const map = useMap()
+  const lastRequest = useRef(0)
+
+  useEffect(() => {
+    if (position && request > 0 && request !== lastRequest.current) {
+      map.flyTo([position.lat, position.lng], 18, { duration: 0.8 })
+      lastRequest.current = request
+    }
+  }, [map, position, request])
+
+  return null
+}
+
+function MapZoomLimit({ mapView }) {
+  const map = useMap()
+  const maxZoom = mapView === 'terrain' ? 17 : 18
+
+  useEffect(() => {
+    map.setMaxZoom(maxZoom)
+    if (map.getZoom() > maxZoom) map.setZoom(maxZoom)
+  }, [map, maxZoom])
+
   return null
 }
 
@@ -69,6 +100,8 @@ function App() {
   const [places, setPlaces] = useState(() => loadPlaces())
   const [homeLocation, setHomeLocation] = useState(() => loadHome())
   const [showExportMenu, setShowExportMenu] = useState(false)
+  const [mapView, setMapView] = useState('standard')
+  const [mapFocusRequest, setMapFocusRequest] = useState(0)
   const watchId = useRef(null)
 
   useEffect(() => {
@@ -523,15 +556,34 @@ function App() {
                       : 'Start tracking to begin drawing your route.'}
                 </p>
               </div>
-              <span className="map-badge">
-                <span className="pulse-dot" />
-                {isTracking ? 'LIVE' : returnModeTripId ? 'RETURN' : 'IDLE'}
-              </span>
+                  <div className="map-heading-tools">
+                    <div className="map-view-switcher" aria-label="Map view">
+                      <button className={mapView === 'standard' ? 'active' : ''} onClick={() => setMapView('standard')}>Standard</button>
+                      <button className={mapView === 'satellite' ? 'active' : ''} onClick={() => setMapView('satellite')}>Satellite</button>
+                      <button className={mapView === 'terrain' ? 'active' : ''} onClick={() => setMapView('terrain')}>Terrain</button>
+                    </div>
+                    <span className="map-badge">
+                      <span className="pulse-dot" />
+                      {isTracking ? 'LIVE' : returnModeTripId ? 'RETURN' : 'IDLE'}
+                    </span>
+                  </div>
             </div>
 
             <div className="map-wrap">
-              <MapContainer center={mapCenter} zoom={latestPoint ? 15 : 11} scrollWheelZoom attributionControl={false} className="map">
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              <MapContainer center={mapCenter} zoom={latestPoint ? 16 : 11} minZoom={3} maxZoom={mapView === 'terrain' ? 17 : 18} zoomSnap={0.5} scrollWheelZoom attributionControl={false} className="map">
+                <RecenterMap position={currentPosition} />
+                <FocusMap position={currentPosition} request={mapFocusRequest} />
+                <MapZoomLimit mapView={mapView} />
+                    <TileLayer
+                      key={mapView}
+                      url={mapView === 'satellite'
+                        ? 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+                        : mapView === 'terrain'
+                            ? 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png'
+                          : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
+                          maxNativeZoom={mapView === 'terrain' ? 17 : 18}
+                          maxZoom={mapView === 'terrain' ? 17 : 18}
+                    />
 
                 {selectedTrip && selectedTrip.points?.length > 1 && !returnModeTripId && (
                   <Polyline positions={routeToDisplay(selectedTrip.points)} pathOptions={{ color: '#5b5cf0', weight: 5, opacity: 0.9 }} />
@@ -539,8 +591,8 @@ function App() {
 
                 {returnModeTripId && returnTrip && returnTrip.points?.length > 1 && (
                   <>
-                    <Polyline positions={routeToDisplay(returnTrip.points)} pathOptions={{ color: '#f59e0b', weight: 5, opacity: 0.6 }} />
-                    <Polyline positions={routeToDisplay(returnTrip.points.slice().reverse())} pathOptions={{ color: '#5b5cf0', weight: 4, opacity: 0.35 }} />
+                    <Polyline positions={routeToDisplay(returnTrip.points)} pathOptions={{ color: '#06b6d4', weight: 6, opacity: 0.95 }} />
+                    <Polyline positions={routeToDisplay(returnTrip.points.slice().reverse())} pathOptions={{ color: '#64748b', weight: 4, opacity: 0.35, dashArray: '8 10' }} />
                   </>
                 )}
 
@@ -571,7 +623,7 @@ function App() {
               <div className="map-controls">
                 <button
                   aria-label="Center on current location"
-                  onClick={() => currentPosition && document.querySelector('.leaflet-container')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                  onClick={() => currentPosition && setMapFocusRequest((request) => request + 1)}
                 >
                   <Crosshair size={17} />
                 </button>

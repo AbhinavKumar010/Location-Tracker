@@ -249,6 +249,43 @@ h1 {
   font-size: 0.78rem;
 }
 
+.map-heading-tools {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.55rem;
+  flex-shrink: 0;
+}
+
+.map-view-switcher {
+  display: inline-flex;
+  padding: 0.2rem;
+  gap: 0.15rem;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 0.7rem;
+  background: rgba(241, 245, 249, 0.8);
+}
+
+.map-view-switcher button {
+  border: 0;
+  border-radius: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.65rem;
+  font-weight: 800;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.map-view-switcher button:hover,
+.map-view-switcher button.active {
+  background: #ffffff;
+  color: #4f52d6;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+}
+
 .map-badge {
   display: inline-flex;
   align-items: center;
@@ -846,6 +883,18 @@ h1 {
 
   .map-wrap {
     height: 310px;
+  }
+
+  .map-heading-tools {
+    align-items: stretch;
+  }
+
+  .map-view-switcher {
+    width: 100%;
+  }
+
+  .map-view-switcher button {
+    flex: 1;
   }
 
   .map-heading,
