@@ -148,9 +148,9 @@ function App() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <a className="brand" href="/" aria-label="Trailmark home">
+        <a className="brand" href="/" aria-label="Vithi home">
           <span className="brand-mark"><Route size={18} strokeWidth={2.5} /></span>
-          <span>trailmark</span>
+          <span>Vithi</span>
         </a>
         <div className="header-status"><span className={`status-dot ${isTracking ? 'live' : ''}`} /> {isTracking ? 'Recording live' : 'Ready to track'}</div>
         <button className="icon-button" onClick={exportHistory} disabled={!points.length} aria-label="Export location history" title="Export history">
@@ -179,8 +179,8 @@ function App() {
           <div className="map-card">
             <div className="map-heading"><div><h2>Live route</h2><p>{latestPoint ? 'Your recent movement is shown here.' : 'Start tracking to begin drawing your route.'}</p></div><span className="map-badge"><span className="pulse-dot" /> {isTracking ? 'LIVE' : 'IDLE'}</span></div>
             <div className="map-wrap">
-              <MapContainer center={center} zoom={latestPoint ? 16 : 11} scrollWheelZoom className="map">
-                <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              <MapContainer center={center} zoom={latestPoint ? 16 : 11} scrollWheelZoom attributionControl={false} className="map">
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                 {points.length > 1 && <Polyline positions={points.map((point) => [point.lat, point.lng])} pathOptions={{ color: '#5b5cf0', weight: 5, lineCap: 'round', lineJoin: 'round' }} />}
                 {latestPoint && <><CircleMarker center={[latestPoint.lat, latestPoint.lng]} radius={9} pathOptions={{ color: '#fff', weight: 3, fillColor: '#5b5cf0', fillOpacity: 1 }} /><RecenterMap position={latestPoint} /></>}
               </MapContainer>
@@ -204,7 +204,6 @@ function App() {
           </aside>
         </section>
       </main>
-      <footer><span>trailmark v1.0</span><span>Built with privacy in mind <span className="footer-heart">♥</span></span></footer>
     </div>
   )
 }

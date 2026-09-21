@@ -29,3 +29,16 @@ h1 { color: #191a31; font-size: clamp(32px, 4vw, 48px); line-height: 1.08; lette
 footer { max-width: 1180px; padding: 0 28px 35px; margin: auto; display: flex; justify-content: space-between; color: #a4a6b4; font-size: 11px; }.footer-heart { color: #e77e8c; }
 @media (max-width: 800px) { .intro { display: block; }.privacy-note { margin-top: 18px; }.stats-grid { grid-template-columns: repeat(2, 1fr); }.workspace { grid-template-columns: 1fr; } }
 @media (max-width: 480px) { .topbar { padding: 0 18px; }.header-status { display: none; } main { padding: 38px 16px 50px; } h1 { font-size: 34px; }.stats-grid { gap: 9px; }.stat-card { padding: 14px 11px; gap: 8px; }.stat-card strong { font-size: 16px; }.stat-label { font-size: 9px; }.map-wrap { height: 310px; }.map-heading, .history-heading { padding-left: 16px; padding-right: 16px; }.map-actions { padding-left: 16px; padding-right: 16px; }.activity-list { padding-left: 16px; padding-right: 16px; } footer { padding-left: 16px; padding-right: 16px; } }
+
+.app-shell { background: radial-gradient(circle at 92% 4%, #e7e8ff 0, transparent 24%), #f7f8fc; }
+.topbar { background: #ffffffd9; border-bottom-color: #e6e8f0; backdrop-filter: blur(18px); }
+.brand-mark { border-radius: 11px; background: linear-gradient(145deg, #6e70ff, #4b4dd5); box-shadow: 0 7px 16px #5b5cf044; }
+main { padding-top: 58px; }
+.stat-card, .map-card, .history-card { background: #fffffff2; border-color: #e7e9f1; box-shadow: 0 12px 32px #2930600c; }
+.stat-card { border-radius: 16px; transition: transform .2s ease, box-shadow .2s ease; }
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 14px 30px #29306012; }
+.map-card, .history-card { border-radius: 18px; }
+.map-controls button { width: 36px; height: 36px; background: #fffffff2; border: 1px solid #e6e8f0; border-radius: 10px; box-shadow: 0 5px 14px #1f245328; transition: transform .2s ease, color .2s ease; }
+.map-controls button:hover { color: #5b5cf0; transform: translateY(-1px); }
+.primary-button { background: linear-gradient(135deg, #6567f7, #4f51dd); border-radius: 10px; box-shadow: 0 7px 16px #5b5cf033; transition: transform .2s ease, box-shadow .2s ease; }
+.primary-button:hover { background: linear-gradient(135deg, #7072ff, #5557e5); transform: translateY(-1px); box-shadow: 0 10px 20px #5b5cf044; }
